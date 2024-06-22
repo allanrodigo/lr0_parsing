@@ -68,7 +68,7 @@ If the string does not belong to the language, the program will reject it:
 
 ```sh
 $ ./bin/main.exe
-Enter the input string: a+b
+Enter the input string: 1-1
 <REJECT>
 ```
 
