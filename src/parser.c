@@ -58,18 +58,23 @@ void parse(const char* input) {
     int i = 0;                   // Índice para percorrer a string de entrada
     char current_symbol = input[i]; // Símbolo atual é o primeiro da entrada
 
+    printf("Iniciando analise sintatica...\n");
+    printf("Entrada: %s\n", input);
+
     while (1) {
         int state = stack[top].state;  // Estado atual do topo da pilha
         int symbol_index = get_symbol_index(current_symbol); // Índice do símbolo atual
         if (symbol_index == -1) {
-            printf("<REJEITAR>\n");
+            printf("Simbolo invalido: %c\n", current_symbol);
+            printf("1. <REJEITAR>\n");
             return;
         }
-
+        printf("Estado atual: %d, Simbolo atual: %c, Indice do simbolo: %d\n", state, current_symbol, symbol_index);
         Action action = lr_table[state][symbol_index]; // Obtém a ação da tabela LR(0) para o estado e símbolo atuais
 
         if (action.action == 's') {
             // Ação de shift: empilha o novo estado e símbolo, avança na entrada
+            printf("Acao: shift, Proximo estado: %d\n", action.state);
             top++;
             stack[top].state = action.state;
             stack[top].symbol = current_symbol;
@@ -77,6 +82,7 @@ void parse(const char* input) {
             current_symbol = input[i];
         } else if (action.action == 'r') {
             // Ação de reduce: desempilha conforme a regra e empilha o não-terminal correspondente
+            printf("Acao: reduce, Regra: %d\n", action.state);
             int num_pop;
             char non_terminal;
             switch (action.state) {
@@ -86,6 +92,7 @@ void parse(const char* input) {
                 case 4: num_pop = 3; non_terminal = 'E'; break; // Regra E → E + S
                 default: num_pop = 0; non_terminal = ' '; break;
             }
+            printf("Desempilhando %d simbolos, Empilhando nao-terminal: %c\n", num_pop, non_terminal);
             top -= num_pop; // Desempilha conforme a quantidade de símbolos na regra
             int goto_index = get_non_terminal_index(non_terminal); // Obtém o índice do não-terminal
             int goto_state = lr_table[stack[top].state][goto_index].state; // Estado de destino após a redução
@@ -94,11 +101,13 @@ void parse(const char* input) {
             stack[top].symbol = non_terminal; // Empilha o não-terminal
         } else if (action.action == 'a') {
             // Ação de accept: a entrada é aceita
-            printf("Input string is accepted.\n");
+            printf("Acao: accept\n");
+            printf("\n\nString is accepted.\n");
             return;
         } else {
             // Qualquer outra ação: rejeita a entrada
-            printf("<REJEITAR>\n");
+            printf("Acao: erro\n");
+            printf("2. <REJEITAR>\n");
             return;
         }
     }
