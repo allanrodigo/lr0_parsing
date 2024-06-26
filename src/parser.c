@@ -11,16 +11,14 @@
 Action lr_table[NUM_STATES][NUM_SYMBOLS] = {
     //    (        )        x        +        $        E        S
     {{'s', 2}, {' ', 0}, {'s', 3}, {' ', 0}, {' ', 0}, {' ', 0}, {' ', 1}}, // Estado 0
-    {{' ', 0}, {' ', 0}, {' ', 0}, {'s', 9}, {'a', 0}, {' ', 0}, {' ', 0}}, // Estado 1 
+    {{' ', 0}, {' ', 0}, {' ', 0}, {' ', 0}, {'a', 0}, {' ', 0}, {' ', 0}}, // Estado 1 
     {{' ', 0}, {' ', 0}, {'s', 3}, {' ', 0}, {' ', 0}, {' ', 4}, {' ', 5}}, // Estado 2
     {{'r', 2}, {'r', 2}, {'r', 2}, {'r', 2}, {'r', 2}, {' ', 0}, {' ', 0}}, // Estado 3
-    {{' ', 0}, {'s', 6}, {' ', 0}, {'s', 9}, {' ', 0}, {' ', 0}, {' ', 0}}, // Estado 4
+    {{' ', 0}, {'s', 6}, {' ', 0}, {' ', 0}, {'a', 0}, {' ', 0}, {' ', 0}}, // Estado 4
     {{'r', 3}, {'r', 3}, {'r', 3}, {'r', 3}, {'r', 3}, {' ', 0}, {' ', 0}}, // Estado 5 
     {{'r', 1}, {'r', 1}, {'r', 1}, {'r', 1}, {'r', 1}, {' ', 0}, {' ', 0}}, // Estado 6
     {{' ', 0}, {'r', 3}, {' ', 0}, {' ', 0}, {' ', 0}, {' ', 0}, {' ', 8}}, // Estado 7
-    {{'r', 4}, {'r', 4}, {'r', 4}, {'r', 4}, {'r', 4}, {' ', 0}, {' ', 0}},  // Estado 8 
-    {{' ', 0}, {' ', 0}, {'s', 3}, {' ', 0}, {' ', 0}, {' ', 0}, {' ', 10}}, // Estado 9 
-    {{'r', 4}, {'r', 4}, {'r', 4}, {'r', 4}, {'a', 1}, {' ', 0}, {' ', 0}} // Estado 10 
+    {{'r', 4}, {'r', 4}, {'r', 4}, {'r', 4}, {'r', 4}, {' ', 0}, {' ', 0}}  // Estado 8 
 };
 
 // Função para obter o índice do símbolo na tabela
@@ -48,8 +46,8 @@ int get_non_terminal_index(char symbol) {
 void parse(const char* input) {
     StackItem stack[STACK_SIZE]; // Declara a pilha
     int top = 0;                 // Inicializa o topo da pilha
-    stack[top].state = 0;        // Estado inicial é 0
     stack[top].symbol = '$';     // Símbolo inicial é $
+    stack[top].state = 0;        // Estado inicial é 0
 
     int i = 0;                   // Índice para percorrer a string de entrada
     char current_symbol = input[i]; // Símbolo atual é o primeiro da entrada
@@ -72,8 +70,8 @@ void parse(const char* input) {
             // Ação de shift: empilha o novo estado e símbolo, avança na entrada
             printf("Acao: shift, Proximo estado: %d\n", action.state);
             top++;
-            stack[top].state = action.state;
             stack[top].symbol = current_symbol;
+            stack[top].state = action.state;
             i++;
             current_symbol = input[i];
         } else if (action.action == 'r') {
@@ -85,7 +83,7 @@ void parse(const char* input) {
                 case 1: num_pop = 3; non_terminal = 'S'; break; // Regra S → (E)
                 case 2: num_pop = 1; non_terminal = 'S'; break; // Regra S → x
                 case 3: num_pop = 1; non_terminal = 'E'; break; // Regra E → S
-                case 4: num_pop = 5; non_terminal = 'E'; break; // Regra E → E + S
+                case 4: num_pop = 3; non_terminal = 'E'; break; // Regra E → E + S
                 default: num_pop = 0; non_terminal = ' '; break;
             }
             printf("Desempilhando %d simbolos, Empilhando nao-terminal: %c\n", num_pop, non_terminal);
@@ -95,6 +93,11 @@ void parse(const char* input) {
             top++;
             stack[top].state = goto_state; // Empilha o novo estado
             stack[top].symbol = non_terminal; // Empilha o não-terminal
+            if (current_symbol != '$')
+            {
+                i++;
+                current_symbol = input[i];
+            }
         } else if (action.action == 'a') {
             // Ação de accept: a entrada é aceita
             printf("Acao: accept\n");
